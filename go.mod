@@ -3,7 +3,7 @@ module rolloutplugin
 go 1.23.5
 
 require (
-	github.com/aburan28/rolloutplugin-controller v0.0.0-20250322190044-20af47f226d2
+	github.com/aburan28/rolloutplugin-controller v0.0.0-20250322202619-cb1a0320141a
 	github.com/argoproj/argo-rollouts v1.8.2
 	github.com/hashicorp/go-plugin v1.6.3
 	github.com/hashicorp/serf v0.10.2
