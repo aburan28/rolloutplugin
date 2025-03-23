@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"rolloutplugin/pkg/plugin"
 
@@ -28,9 +29,10 @@ func main() {
 	versionFlag := flag.Bool("version", false, "Print the version of the plugin")
 	flag.Parse()
 	if *versionFlag {
-		fmt.Println(version.GetHumanVersion())
+		fmt.Fprintln(os.Stderr, version.GetHumanVersion()) // print to stderr
 		return
 	}
+	log.SetOutput(os.Stderr)
 
 	logCtx := log.WithFields(log.Fields{"plugin": "rolloutplugin"})
 	log.SetLevel(log.InfoLevel)

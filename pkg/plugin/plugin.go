@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/aburan28/rolloutplugin-controller/api/v1alpha1"
 	pluginTypes "github.com/aburan28/rolloutplugin-controller/pkg/types"
-
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -18,6 +18,7 @@ type StatefulSetRpcPlugin struct {
 }
 
 func (r *StatefulSetRpcPlugin) InitPlugin() pluginTypes.RpcError {
+	r.LogCtx.Info("InitPlugin")
 	if r.IsTest {
 		return pluginTypes.RpcError{}
 	}
@@ -36,12 +37,18 @@ func (r *StatefulSetRpcPlugin) InitPlugin() pluginTypes.RpcError {
 }
 
 func (r *StatefulSetRpcPlugin) SetWeight(rolloutplugin *v1alpha1.RolloutPlugin) pluginTypes.RpcError {
-	fmt.Println("SetWeight")
+	r.LogCtx.Info("SetWeight")
+	ctx := context.TODO()
+	_, err := r.Clienset.AppsV1().StatefulSets(rolloutplugin.Namespace).Get(ctx, rolloutplugin.Name, metav1.GetOptions{})
+	if err != nil {
+		return pluginTypes.RpcError{ErrorString: err.Error()}
+	}
 	// need to know what to do here
 	return pluginTypes.RpcError{}
 }
 
 func (r *StatefulSetRpcPlugin) SetCanaryScale(rolloutplugin *v1alpha1.RolloutPlugin) pluginTypes.RpcError {
+	r.LogCtx.Info("SetCanaryScale")
 	return pluginTypes.RpcError{}
 }
 
