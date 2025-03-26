@@ -1,5 +1,5 @@
-github.com/aburan28/rolloutplugin-controller v0.0.0-20250322202619-cb1a0320141a h1:QC7a3Yw3CiyqhW2+zbZCTFVAAnIRPe4ObmUG/XFBnoQ=
-github.com/aburan28/rolloutplugin-controller v0.0.0-20250322202619-cb1a0320141a/go.mod h1:/h0QdV+9IN2EFq4pbSSGuo7T7TD9d1B68YXYBP0cpc0=
+github.com/aburan28/rolloutplugin-controller v0.0.0-20250323230409-d4b064e01e29 h1:9ArS16/QAHNkIeUZTAo69hSSZ5YqtEog2532OC9kZk4=
+github.com/aburan28/rolloutplugin-controller v0.0.0-20250323230409-d4b064e01e29/go.mod h1:8ZONuJNW70/cq9pUZoaUprURhNDio6v5cA9tRpXi25E=
 github.com/argoproj/argo-rollouts v1.8.2 h1:DBvkYvFTEH/zJ9MxJerqz/NMWEgZcHY5vxztyCBS5ak=
 github.com/argoproj/argo-rollouts v1.8.2/go.mod h1:xZIw+dg+B4IqMv5fNPenIBUiPb9xljL2st1xxkjhaC0=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=

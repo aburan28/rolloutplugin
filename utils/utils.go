@@ -13,3 +13,17 @@ func NewKubeConfig() (*rest.Config, error) {
 	}
 	return config, nil
 }
+
+// func NewClientset(config *rest.Config) (*kubernetes.Clientset, error) {
+// 	config, err := rest.InClusterConfig()
+// 	if err != nil {
+// 		return pluginTypes.RpcError{ErrorString: err.Error()}
+// 	}
+
+// 	clientset, err := kubernetes.NewForConfig(config)
+// 	if err != nil {
+// 		return pluginTypes.RpcError{ErrorString: err.Error()}
+// 	}
+// 	r.Clienset = clientset
+// 	return clientset, nil
+// }

@@ -3,11 +3,13 @@ module rolloutplugin
 go 1.23.5
 
 require (
-	github.com/aburan28/rolloutplugin-controller v0.0.0-20250322202619-cb1a0320141a
+	github.com/aburan28/rolloutplugin-controller v0.0.0-20250323230409-d4b064e01e29
 	github.com/argoproj/argo-rollouts v1.8.2
 	github.com/hashicorp/go-plugin v1.6.3
 	github.com/hashicorp/serf v0.10.2
 	github.com/sirupsen/logrus v1.9.3
+	github.com/stretchr/testify v1.10.0
+	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.3
 )
 
@@ -38,6 +40,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/net v0.35.0 // indirect
@@ -53,7 +56,6 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.32.3 // indirect
-	k8s.io/apimachinery v0.32.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect

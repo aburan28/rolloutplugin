@@ -20,7 +20,7 @@ import (
 var handshakeConfig = goPlugin.HandshakeConfig{
 	ProtocolVersion:  1,
 	MagicCookieKey:   "ARGO_ROLLOUTS_RPC_PLUGIN",
-	MagicCookieValue: "statefulset",
+	MagicCookieValue: "rolloutplugin",
 }
 
 func main() {
@@ -32,15 +32,20 @@ func main() {
 		fmt.Fprintln(os.Stderr, version.GetHumanVersion()) // print to stderr
 		return
 	}
+	// log.SetOutput(os.Stderr)
 	log.SetOutput(os.Stderr)
 
-	logCtx := log.WithFields(log.Fields{"plugin": "rolloutplugin"})
-	log.SetLevel(log.InfoLevel)
+	logCtx := log.WithFields(log.Fields{"plugin": "rolloutpl2222ugin"})
 
-	rpcPluginImp := &plugin.StatefulSetRpcPlugin{LogCtx: logCtx}
+	rpcPluginImp := &plugin.StatefulSetRpcPlugin{
+		LogCtx: logCtx,
+	}
 
 	var pluginMap = map[string]goPlugin.Plugin{
-		"RolloutPlugin": &rpc.RpcRolloutPlugin{Impl: rpcPluginImp},
+		"RpcRolloutPlugin": &rpc.RpcRolloutPlugin{
+			Impl: rpcPluginImp,
+		},
+
 		// "RpcTrafficRouterPlugin": &rolloutsPlugin.RpcTrafficRouterPlugin{Impl: rpcPluginImp},
 	}
 

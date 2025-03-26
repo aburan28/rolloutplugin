@@ -2,34 +2,56 @@ package plugin
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
 	"github.com/aburan28/rolloutplugin-controller/api/v1alpha1"
+	"github.com/aburan28/rolloutplugin-controller/pkg/plugin/rpc"
 	pluginTypes "github.com/aburan28/rolloutplugin-controller/pkg/types"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 type StatefulSetRpcPlugin struct {
 	Clienset *kubernetes.Clientset
 	LogCtx   *logrus.Entry
 	IsTest   bool
+
+	dynamicInformerFactory        dynamicinformer.DynamicSharedInformerFactory
+	clusterDynamicInformerFactory dynamicinformer.DynamicSharedInformerFactory
+	istioDynamicInformerFactory   dynamicinformer.DynamicSharedInformerFactory
 }
 
+var _ rpc.RolloutPlugin = (*StatefulSetRpcPlugin)(nil)
+
 func (r *StatefulSetRpcPlugin) InitPlugin() pluginTypes.RpcError {
+	// setup informer??
 	r.LogCtx.Info("InitPlugin")
 	if r.IsTest {
 		return pluginTypes.RpcError{}
 	}
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return pluginTypes.RpcError{ErrorString: err.Error()}
+
+	// Use the default kubeconfig file from the user's home directory.
+	var kubeconfig string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = filepath.Join(home, ".kube", "config")
 	}
 
+	// Build the config from the kubeconfig file.
+	// This automatically uses the current/default context set in your kubeconfig.
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("failed to build kubeconfig: %v", err)}
+	}
+
+	// Create the Kubernetes clientset.
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return pluginTypes.RpcError{ErrorString: err.Error()}
+		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("failed to create clientset: %v", err)}
 	}
 	r.Clienset = clientset
 
@@ -38,10 +60,15 @@ func (r *StatefulSetRpcPlugin) InitPlugin() pluginTypes.RpcError {
 
 func (r *StatefulSetRpcPlugin) SetWeight(rolloutplugin *v1alpha1.RolloutPlugin) pluginTypes.RpcError {
 	r.LogCtx.Info("SetWeight")
+	r.LogCtx.Info(rolloutplugin.Name)
 	ctx := context.TODO()
-	_, err := r.Clienset.AppsV1().StatefulSets(rolloutplugin.Namespace).Get(ctx, rolloutplugin.Name, metav1.GetOptions{})
+
+	ss, err := r.Clienset.AppsV1().StatefulSets(rolloutplugin.Namespace).Get(ctx, rolloutplugin.Name, metav1.GetOptions{})
 	if err != nil {
 		return pluginTypes.RpcError{ErrorString: err.Error()}
+	}
+	if ss == nil {
+		return pluginTypes.RpcError{ErrorString: "StatefulSet not found"}
 	}
 	// need to know what to do here
 	return pluginTypes.RpcError{}
@@ -53,7 +80,7 @@ func (r *StatefulSetRpcPlugin) SetCanaryScale(rolloutplugin *v1alpha1.RolloutPlu
 }
 
 func (r *StatefulSetRpcPlugin) Type() string {
-	return "rolloutplugin"
+	return "RpcRolloutPlugin"
 }
 
 func (r *StatefulSetRpcPlugin) UpdateHash(rolloutplugin *v1alpha1.RolloutPlugin) pluginTypes.RpcError {
