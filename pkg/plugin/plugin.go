@@ -9,7 +9,6 @@ import (
 	"github.com/aburan28/rolloutplugin-controller/pkg/plugin/rpc"
 	pluginTypes "github.com/aburan28/rolloutplugin-controller/pkg/types"
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -58,15 +57,31 @@ func (r *StatefulSetRpcPlugin) InitPlugin() pluginTypes.RpcError {
 	return pluginTypes.RpcError{}
 }
 
+func (r *StatefulSetRpcPlugin) CheckForRollouts(clientset *kubernetes.Clientset) pluginTypes.RpcError {
+	return pluginTypes.RpcError{}
+}
+
 func (r *StatefulSetRpcPlugin) SetWeight(rolloutplugin *v1alpha1.RolloutPlugin) pluginTypes.RpcError {
+
 	r.LogCtx.Info("SetWeight")
 	r.LogCtx.Info(rolloutplugin.Name)
+
 	ctx := context.TODO()
 
-	ss, err := r.Clienset.AppsV1().StatefulSets(rolloutplugin.Namespace).Get(ctx, rolloutplugin.Name, metav1.GetOptions{})
+	ss, err := r.lookupStatefulSet(ctx, rolloutplugin.Spec.Selector.MatchLabels, rolloutplugin.Name, rolloutplugin.Namespace)
 	if err != nil {
-		return pluginTypes.RpcError{ErrorString: err.Error()}
+		r.LogCtx.Errorf("Error looking up StatefulSet: %v", err)
+		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("Error looking up StatefulSet: %v", err)}
 	}
+
+	curWeight := rolloutplugin.Status.CurrentWeight
+	// do the math on updating the weight/replicas
+	desiredReplicas := ss.Spec.Replicas
+	currentReplicas := ss.Status.Replicas
+	partition := ss.Spec.UpdateStrategy.RollingUpdate.Partition
+
+	// Update the StatefulSet
+
 	if ss == nil {
 		return pluginTypes.RpcError{ErrorString: "StatefulSet not found"}
 	}
