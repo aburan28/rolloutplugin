@@ -75,11 +75,16 @@ func (r *StatefulSetRpcPlugin) SetWeight(rolloutplugin *v1alpha1.RolloutPlugin) 
 	}
 
 	curWeight := rolloutplugin.Status.CurrentWeight
+	pods, err := r.lookupPods(ctx, rolloutplugin.Spec.Selector.MatchLabels, rolloutplugin.Name, rolloutplugin.Namespace)
+	if err != nil {
+		r.LogCtx.Errorf("Error looking up Pods: %v", err)
+		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("Error looking up Pods: %v", err)}
+	}
+
 	// do the math on updating the weight/replicas
 	desiredReplicas := ss.Spec.Replicas
 	currentReplicas := ss.Status.Replicas
 	partition := ss.Spec.UpdateStrategy.RollingUpdate.Partition
-
 	// Update the StatefulSet
 
 	if ss == nil {

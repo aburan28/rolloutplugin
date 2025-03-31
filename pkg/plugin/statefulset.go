@@ -38,3 +38,23 @@ func (r *StatefulSetRpcPlugin) lookupStatefulSet(ctx context.Context, matchLabel
 	return ss, nil
 
 }
+
+func (r *StatefulSetRpcPlugin) lookupPods(ctx context.Context, matchLabels map[string]string, name string, namespace string) ([]*corev1.Pod, error) {
+	ls := metav1.LabelSelector{
+		MatchLabels: matchLabels,
+	}
+
+	labelSelector, err := metav1.LabelSelectorAsSelector(&ls)
+	if err != nil {
+		return nil, err
+	}
+	podList, err := r.Clienset.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return podList, nil
+
+}
