@@ -74,17 +74,25 @@ func (r *StatefulSetRpcPlugin) SetWeight(rolloutplugin *v1alpha1.RolloutPlugin) 
 		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("Error looking up StatefulSet: %v", err)}
 	}
 
-	curWeight := rolloutplugin.Status.CurrentWeight
-	pods, err := r.lookupPods(ctx, rolloutplugin.Spec.Selector.MatchLabels, rolloutplugin.Name, rolloutplugin.Namespace)
+	curWeight := float64(rolloutplugin.Status.CurrentWeight)
+
+	pods, err := r.lookupPods(ctx, rolloutplugin.Status.UpdatedRevision, rolloutplugin.Name, rolloutplugin.Namespace)
 	if err != nil {
 		r.LogCtx.Errorf("Error looking up Pods: %v", err)
 		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("Error looking up Pods: %v", err)}
 	}
+	desiredReplicas := float64(*ss.Spec.Replicas)
 
+	updateRevisionPods := float64(len(pods.Items))
+
+	percentUpdatedPods := (float64(updateRevisionPods) / float64(desiredReplicas)) * 100
+	if curWeight >= percentUpdatedPods {
+		r.LogCtx.Infof("Current weight %v is greater than or equal to percent updated pods %v", curWeight, percentUpdatedPods)
+		return pluginTypes.RpcError{}
+	}
 	// do the math on updating the weight/replicas
-	desiredReplicas := ss.Spec.Replicas
-	currentReplicas := ss.Status.Replicas
 	partition := ss.Spec.UpdateStrategy.RollingUpdate.Partition
+	r.LogCtx.Infof("Current partition %v", partition)
 	// Update the StatefulSet
 
 	if ss == nil {

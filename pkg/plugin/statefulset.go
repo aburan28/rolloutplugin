@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,7 +40,12 @@ func (r *StatefulSetRpcPlugin) lookupStatefulSet(ctx context.Context, matchLabel
 
 }
 
-func (r *StatefulSetRpcPlugin) lookupPods(ctx context.Context, matchLabels map[string]string, name string, namespace string) ([]*corev1.Pod, error) {
+func (r *StatefulSetRpcPlugin) lookupPods(ctx context.Context, revision string, name string, namespace string) (*corev1.PodList, error) {
+
+	matchLabels := map[string]string{
+		"controller-revision-hash": revision,
+	}
+
 	ls := metav1.LabelSelector{
 		MatchLabels: matchLabels,
 	}
