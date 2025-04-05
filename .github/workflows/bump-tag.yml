@@ -1,4 +1,4 @@
-name: Bump Go Library Tag
+name: Bump Go Library Tag and Release
 
 on:
   push:
@@ -13,14 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch full history so tags are available
+          fetch-depth: 0  # Ensure full history for tags
 
       - name: Set up Git configuration
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-      - name: Bump version and create tag
+      - name: Bump version, create tag, and push
         id: tag_bump
         run: |
           # Get the latest tag; if none exists, default to v0.0.0
@@ -31,7 +31,7 @@ jobs:
           version=${latest_tag#v}
           IFS='.' read -r major minor patch <<< "$version"
 
-          # Increment the patch version (or set defaults if no tag exists)
+          # Increment the patch version (or start at v0.1.0 if no tag exists)
           if [ "$latest_tag" = "v0.0.0" ]; then
             new_tag="v0.1.0"
           else
@@ -44,3 +44,14 @@ jobs:
           # Create and push the new tag
           git tag "$new_tag"
           git push origin "$new_tag"
+          
+          # Set the new tag as an output variable
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_bump.outputs.new_tag }}
+          name: Release ${{ steps.tag_bump.outputs.new_tag }}
+          body: |
+            Automated release for tag ${{ steps.tag_bump.outputs.new_tag }}.
