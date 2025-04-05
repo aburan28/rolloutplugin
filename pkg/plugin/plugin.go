@@ -8,7 +8,9 @@ import (
 	"github.com/aburan28/rolloutplugin-controller/api/v1alpha1"
 	"github.com/aburan28/rolloutplugin-controller/pkg/plugin/rpc"
 	pluginTypes "github.com/aburan28/rolloutplugin-controller/pkg/types"
+	"github.com/aburan28/rolloutplugin-controller/pkg/utils/hash"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -57,7 +59,35 @@ func (r *StatefulSetRpcPlugin) InitPlugin() pluginTypes.RpcError {
 	return pluginTypes.RpcError{}
 }
 
+var RolloutPluginGVR = schema.GroupVersionResource{
+	Group:    "rolloutplugin.io",
+	Version:  "v1alpha1",
+	Resource: "rolloutplugins",
+}
+
 func (r *StatefulSetRpcPlugin) CheckForRollouts(clientset *kubernetes.Clientset) pluginTypes.RpcError {
+	return pluginTypes.RpcError{}
+}
+
+func (r *StatefulSetRpcPlugin) Sync(rolloutplugin *v1alpha1.RolloutPlugin) pluginTypes.RpcError {
+	r.LogCtx.Info("Sync")
+	r.LogCtx.Info(rolloutplugin.Name)
+	ctx := context.TODO()
+	ss, err := r.lookupStatefulSet(ctx, rolloutplugin.Spec.Selector.MatchLabels, rolloutplugin.Name, rolloutplugin.Namespace)
+	if err != nil {
+		r.LogCtx.Errorf("Error looking up StatefulSet: %v", err)
+		return pluginTypes.RpcError{ErrorString: fmt.Sprintf("Error looking up StatefulSet: %v", err)}
+	}
+	r.LogCtx.Infof("StatefulSet: %s", ss.Name)
+	i := int32(3)
+	hash := hash.ComputePodTemplateHash(&ss.Spec.Template, &i)
+	r.LogCtx.Infof("Hash: %s", hash)
+	if rolloutplugin.Status.CurrentRevision != hash {
+		r.LogCtx.Infof("Updating rolloutplugin status with hash: %s", hash)
+		rolloutplugin.Status.CurrentRevision = hash
+
+		rolloutplugin.Status.UpdatedRevision = hash
+	}
 	return pluginTypes.RpcError{}
 }
 

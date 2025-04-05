@@ -24,8 +24,6 @@ var handshakeConfig = goPlugin.HandshakeConfig{
 }
 
 func main() {
-	// Create a flag to print the version of the plugin
-	// This is useful for debugging and support
 	versionFlag := flag.Bool("version", false, "Print the version of the plugin")
 	flag.Parse()
 	if *versionFlag {
@@ -45,8 +43,6 @@ func main() {
 		"RpcRolloutPlugin": &rpc.RpcRolloutPlugin{
 			Impl: rpcPluginImp,
 		},
-
-		// "RpcTrafficRouterPlugin": &rolloutsPlugin.RpcTrafficRouterPlugin{Impl: rpcPluginImp},
 	}
 
 	goPlugin.Serve(&goPlugin.ServeConfig{
